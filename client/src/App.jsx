@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
   LineChart,
@@ -19,8 +19,44 @@ function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [stockData, setStockData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
   const [error, setError] = useState('');
   const [period, setPeriod] = useState('1mo');
+
+  useEffect(() => {
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) {
+      setSearchResults([]);
+      setSuggesting(false);
+      return;
+    }
+
+    let isActive = true;
+    const timeoutId = setTimeout(async () => {
+      setSuggesting(true);
+      setError('');
+      try {
+        const res = await axios.get(`${API_BASE}/search`, {
+          params: { query: trimmedQuery, limit: 10 }
+        });
+        if (isActive) {
+          setSearchResults(res.data);
+        }
+      } catch (err) {
+        if (isActive) {
+          setError('검색 중 오류가 발생했습니다');
+        }
+      }
+      if (isActive) {
+        setSuggesting(false);
+      }
+    }, 300);
+
+    return () => {
+      isActive = false;
+      clearTimeout(timeoutId);
+    };
+  }, [query]);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -106,8 +142,8 @@ function App() {
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             placeholder="종목명 또는 심볼 입력 (예: 삼성전자, AAPL)"
           />
-          <button onClick={handleSearch} disabled={loading}>
-            {loading ? '검색 중...' : '검색'}
+          <button onClick={handleSearch} disabled={loading || suggesting}>
+            {loading ? '검색 중...' : suggesting ? '추천 중...' : '검색'}
           </button>
         </div>
 

@@ -12,13 +12,13 @@ app.use(express.json());
 // 종목 검색 API
 app.get('/api/search', async (req, res) => {
   try {
-    const { query } = req.query;
+    const { query, limit } = req.query;
     if (!query) {
       return res.status(400).json({ error: '검색어를 입력해주세요' });
     }
 
     const results = await yahooFinance.search(query);
-    const stocks = results.quotes.filter(q =>
+    let stocks = results.quotes.filter(q =>
       q.quoteType === 'EQUITY' || q.quoteType === 'ETF'
     ).map(q => ({
       symbol: q.symbol,
@@ -26,6 +26,11 @@ app.get('/api/search', async (req, res) => {
       exchange: q.exchange,
       type: q.quoteType
     }));
+
+    const limitNumber = Number.parseInt(limit, 10);
+    if (Number.isFinite(limitNumber) && limitNumber > 0) {
+      stocks = stocks.slice(0, limitNumber);
+    }
 
     res.json(stocks);
   } catch (error) {
