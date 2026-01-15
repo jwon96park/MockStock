@@ -1,0 +1,31 @@
+# MockStock Cursor Rules
+
+## Project Context
+
+- This is a full-stack app with `client/` (React + Vite) and `server/` (Express).
+- Backend uses `yahoo-finance2` to fetch stock data and derive signals.
+- Frontend calls the backend at `http://localhost:5000/api`.
+
+## Workflows
+
+- Start server: `cd server && npm install && npm run dev`
+- Start client: `cd client && npm install && npm run dev`
+- Default frontend URL: `http://localhost:5173`
+- Default backend URL: `http://localhost:5000`
+
+## Conventions
+
+- Keep API routes under `server/index.js` and follow existing patterns:
+  - `GET /api/search?query=...`
+  - `GET /api/stock/:symbol?period=...`
+- When adding indicators or signals, extend:
+  - `calculateSignals()`, `calculateMA()`, `calculateRSI()`
+- For UI changes, keep logic in `client/src/App.jsx` unless extracting
+  reusable components.
+- Preserve CORS and JSON middleware in the server.
+
+## Quality
+
+- Avoid breaking the API response shape used by the client.
+- Keep error messages user-friendly and in Korean when surfaced to the UI.
+- Use ASCII in new docs/config unless the file already uses non-ASCII.
